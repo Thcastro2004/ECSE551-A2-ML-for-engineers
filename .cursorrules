@@ -1,0 +1,53 @@
+# Colab Notebook Migration Rules
+
+When updating the remote Colab notebook (Barnett_Cottereau_Zhang_Assignment2_COLAB.ipynb), follow these rules:
+
+## Path Rules
+- All data paths must use `/content/drive/MyDrive/data` as the base path
+- Model save paths must use `/content/drive/MyDrive/` (e.g., `/content/drive/MyDrive/task2_best_model.pth`)
+- Submission file must be saved to `/content/drive/MyDrive/task2_submission.csv`
+- Test indices must be saved to `/content/drive/MyDrive/task2_test_indices.npy`
+
+## DataLoader Configuration
+- All DataLoader instances must use `num_workers=2` (Colab requirement)
+- Remove `persistent_workers=True` and `pin_memory=True` (not needed in Colab)
+- Remove `prefetch_factor` parameter (not needed in Colab)
+
+## GPU Optimization
+- Remove all GPU optimization code:
+  - Remove `torch.backends.cudnn.benchmark` settings
+  - Remove `torch.backends.cudnn.deterministic` settings
+  - Remove mixed precision training code (`torch.amp.autocast`, `GradScaler`)
+  - Remove `non_blocking=True` from `.to(device)` calls
+  - Remove `use_amp` flags and conditional logic
+  - Simplify device setup to: `device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')`
+  - Remove all GPU detection print statements (Colab handles this automatically)
+
+## Code Structure
+- All dataset classes must be defined inline in the notebook (no imports from datasets.py)
+- All functions must be defined inline in the notebook
+- Keep the same cell structure and organization as the original notebook
+- Maintain markdown cells for section headers
+
+## File Creation
+- Do NOT create any files except the submission CSV file
+- Model checkpoints should be saved to Google Drive (`/content/drive/MyDrive/`)
+- Do NOT create directories like `@generated-data/` - use Google Drive instead
+
+## Google Drive Mount
+- First cell must mount Google Drive: `from google.colab import drive; drive.mount('/content/drive')`
+- Assume data is already in `/content/drive/MyDrive/data/kaggle_challenge/`
+
+## Submission Generation
+- Submission generation code must:
+  1. Load the best model from `/content/drive/MyDrive/task2_best_model.pth`
+  2. Use Test551 dataset for Kaggle test set
+  3. Generate predictions and convert to label names
+  4. Save to `/content/drive/MyDrive/task2_submission.csv`
+
+## General Notes
+- Keep code simple and straightforward - Colab handles GPU optimization automatically
+- Remove any Windows-specific optimizations or workarounds
+- Ensure all imports are present in the imports cell
+- Maintain the same training logic and hyperparameters as the local version
+
